@@ -393,6 +393,16 @@ public abstract class BaseSeries<E extends DataPointInterface> implements Series
     }
 
     /**
+     * removes the reference of a previously used graph
+     *
+     * @param graphView graphview
+     */
+    @Override
+    public void onGraphViewUnattached(GraphView graphView) {
+        mGraphViews.remove(graphView);
+    }
+
+    /**
      *
      * @param dataPoint values the values must be in the correct order!
      *                  x-value has to be ASC. First the lowest x value and at least the highest x value.

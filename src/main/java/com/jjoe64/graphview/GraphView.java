@@ -571,6 +571,7 @@ public class GraphView extends View {
      */
     public void removeSeries(Series<?> series) {
         mSeries.remove(series);
+		series.onGraphViewUnattached(this);
         onDataChanged(false, false);
     }
 }
