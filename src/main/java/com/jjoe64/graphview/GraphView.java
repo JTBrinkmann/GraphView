@@ -29,6 +29,7 @@ import android.view.View;
 import com.jjoe64.graphview.series.Series;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 
 /**
@@ -294,9 +295,16 @@ public class GraphView extends View {
         drawTitle(canvas);
         mViewport.drawFirst(canvas);
         mGridLabelRenderer.draw(canvas);
-        for (Series s : mSeries) {
-            s.draw(this, canvas, false);
-        }
+		try {
+			for (Series s : mSeries) {
+				s.draw(this, canvas, false);
+			}
+		} catch (ConcurrentModificationException err) {
+			// Data was manipulated while drawing
+			// only thing we can do is ignore it, or retry
+
+			//ignore
+		}
         if (mSecondScale != null) {
             for (Series s : mSecondScale.getSeries()) {
                 s.draw(this, canvas, true);
