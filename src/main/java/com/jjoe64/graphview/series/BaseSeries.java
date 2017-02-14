@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Set;
 
 /**
  * Basis implementation for series.
@@ -245,6 +244,10 @@ public abstract class BaseSeries<E extends DataPointInterface> implements Series
             };
         }
     }
+	@Override
+	public List<E> getValues() {
+		return mData;
+	}
 
     /**
      * @return the title of the series
@@ -424,24 +427,25 @@ public abstract class BaseSeries<E extends DataPointInterface> implements Series
                 mData.add(dataPoint);
             } else {
                 // we have to trim one data
-                mData.remove(0);
+				removeDataPoint(0);
                 mData.add(dataPoint);
             }
 
-            // update lowest/highest cache
-            double dataPointY = dataPoint.getY();
-            if (!Double.isNaN(mHighestYCache)) {
-                if (dataPointY > mHighestYCache) {
-                    mHighestYCache = dataPointY;
-                }
-            }
-            if (!Double.isNaN(mLowestYCache)) {
-                if (dataPointY < mLowestYCache) {
-                    mLowestYCache = dataPointY;
-                }
-            }
+			double y = dataPoint.getY();
+			if (mData.isEmpty()) {
+				setMinDataPoint(dataPoint, y);
+				setMaxDataPoint(dataPoint, y);
+			} else {
 
-        }
+				if (y <= mLowestYCache) {
+					setMinDataPoint(dataPoint, y);
+				}
+				if (y >= mHighestYCache) {
+					Log.d("BaseSeries", "upping limit to "+y+" at "+dataPoint.getX());
+					setMaxDataPoint(dataPoint, y);
+				}
+			}
+		}
 
         if (!silent) {
             // recalc the labels when it was the first data
@@ -458,6 +462,43 @@ public abstract class BaseSeries<E extends DataPointInterface> implements Series
             }
         }
     }
+
+	private void removeDataPoint(int i) {
+		E dyingDataPoint = mData.get(i);
+		boolean findNewMinimum = (dyingDataPoint == mMinDataPoint);
+		boolean findNewMaximum = (dyingDataPoint == mMaxDataPoint);
+
+		mData.remove(i);
+
+		if (findNewMinimum || findNewMaximum) {
+			Iterator<E> dataPointsIt = mData.iterator();
+			while ((findNewMinimum || findNewMaximum) && dataPointsIt.hasNext()) {
+				E dataPoint = dataPointsIt.next();
+				double dataPointY = dataPoint.getY();
+				if (findNewMinimum  &&  dataPointY <= mLowestYCache) {
+					setMinDataPoint(dataPoint, dataPointY);
+					findNewMinimum = false;
+				}
+				if (findNewMaximum  &&  dataPointY >= mHighestYCache) {
+					setMaxDataPoint(dataPoint, dataPointY);
+					findNewMaximum = false;
+				}
+			}
+		}
+	}
+
+
+	private E mMinDataPoint;
+	private E mMaxDataPoint;
+	private void setMinDataPoint(E minDataPoint, double y) {
+		this.mLowestYCache = y;
+		this.mMinDataPoint = minDataPoint;
+	}
+
+	private void setMaxDataPoint(E maxDataPoint, double y) {
+		this.mHighestYCache = y;
+		this.mMaxDataPoint = maxDataPoint;
+	}
 
     /**
      *

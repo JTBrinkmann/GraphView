@@ -21,6 +21,7 @@ import android.graphics.Canvas;
 import com.jjoe64.graphview.GraphView;
 
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Basis interface for series that can be plotted
@@ -67,6 +68,7 @@ public interface Series<E extends DataPointInterface> {
      *          including the from and until data points.
      */
     public Iterator<E> getValues(double from, double until);
+    public List<E> getValues();
 
     /**
      * Plots the series to the viewport.

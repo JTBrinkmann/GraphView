@@ -534,6 +534,7 @@ public class Viewport {
      * flag whether the y axis bounds are manual
      */
     private boolean mYAxisBoundsManual;
+    private boolean mYAxisBoundsAutoOverCompleteData;
 
     /**
      * background color of the viewport area
@@ -723,13 +724,20 @@ public class Viewport {
             // lowest
             double d = Double.MAX_VALUE;
             for (Series s : series) {
-                Iterator<DataPointInterface> values = s.getValues(mCurrentViewport.left, mCurrentViewport.right);
-                while (values.hasNext()) {
-                    double v = values.next().getY();
-                    if (d > v) {
-                        d = v;
-                    }
-                }
+				if (mYAxisBoundsAutoOverCompleteData) {
+					double v = s.getLowestValueY();
+					if (d > v) {
+						d = v;
+					}
+				} else {
+					Iterator<DataPointInterface> values = s.getValues(mCurrentViewport.left, mCurrentViewport.right);
+					while (values.hasNext()) {
+						double v = values.next().getY();
+						if (d > v) {
+							d = v;
+						}
+					}
+				}
             }
 
             if (d != Double.MAX_VALUE) {
@@ -739,13 +747,20 @@ public class Viewport {
             // highest
             d = Double.MIN_VALUE;
             for (Series s : series) {
-                Iterator<DataPointInterface> values = s.getValues(mCurrentViewport.left, mCurrentViewport.right);
-                while (values.hasNext()) {
-                    double v = values.next().getY();
-                    if (d < v) {
-                        d = v;
-                    }
-                }
+				if (mYAxisBoundsAutoOverCompleteData) {
+					double v = s.getHighestValueY();
+					if (d > v) {
+						d = v;
+					}
+				} else {
+					Iterator<DataPointInterface> values = s.getValues(mCurrentViewport.left, mCurrentViewport.right);
+					while (values.hasNext()) {
+						double v = values.next().getY();
+						if (d < v) {
+							d = v;
+						}
+					}
+				}
             }
 
             if (d != Double.MIN_VALUE) {
@@ -1094,7 +1109,15 @@ public class Viewport {
         }
     }
 
-    /**
+	public boolean isYAxisBoundsAutoOverCompleteData() {
+		return mYAxisBoundsAutoOverCompleteData;
+	}
+
+	public void setYAxisBoundsAutoOverCompleteData(boolean mYAxisBoundsAutoOverCompleteData) {
+		this.mYAxisBoundsAutoOverCompleteData = mYAxisBoundsAutoOverCompleteData;
+	}
+
+	/**
      * forces the viewport to scroll to the end
      * of the range by keeping the current viewport size.
      *
